@@ -1,3 +1,10 @@
+<!--
+ * @Author: yuguangzhou
+ * @Date: 2021-01-23 14:32:02
+ * @LastEditTime: 2021-08-10 15:51:28
+ * @LastEditors: yuguangzhou
+ * @Description:
+-->
 <template>
  <div class="prinfWord">
       <div id="printMe" style="background:red;">

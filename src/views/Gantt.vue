@@ -10,11 +10,12 @@
           value-format="yyyy-MM-dd"
         >
         </el-date-picker>
+        <el-button style="float:right" type="primary" size="small" @click="insert">新增</el-button>
       </el-col>
     </el-row>
     <div class="content">
       <div class="time-bar clear">
-        <ul class="gui-table clear">
+        <div class="gui-table clear">
           <li
             :style="{width: 100/(config.endTime-config.startTime+1)+'%'}"
             v-for="(item, index) in (config.endTime-config.startTime+1)"
@@ -24,40 +25,41 @@
             <div class="gui-cle"></div>
             <div class="gui-lit"></div>
           </li>
-        </ul>
+        </div>
       </div>
       <div
         class="info"
         style="margin-top: 2px;overflow:auto;"
-        :style="{height:'700px'}"
+        :style="{height:'auto'}"
       >
         <div id="gui-content">
           <div
             class="gui-content gui-list clear room-gui-list"
             v-for="room in roomList"
-            :key="room.id"
+            :key="room.roomId"
           >
             <div
               id="roomName"
               class="fasten ellipsis"
               :title="room.name"
             >{{room.name}}</div>
-            <ul class="gui-tab">
+          <div class="gui-tab">
               <li
                 v-for="(o) in (config.endTime-config.startTime+1)"
                 :key="o"
                 :style="{width: 100/(config.endTime-config.startTime+1)+'%',cursor:'pointer'}"
               ></li>
-            </ul>
-            <template v-if="room.id">
+          </div>
+            <template v-if="room.roomId">
               <div
                     v-for="(item, index) in room.roomData"
                     :key="index"
                     class="meet-item-one"
-                    v-bind:class="[(item.statusDesc== '进行中')?'meet-color-having':'meet-color-finished']"
+                    v-bind:class="[!item.status?'meet-color-having':'meet-color-finished']"
                     :title="item.content"
                     :style="{left:getLeftTime(item.startTime)+'%',width:getWidth(item)+'%'}"
                     v-show="getWidth(item)!=0"
+                    @click="edit(item)"
                   >
                     <p
                       class="ellipsis"
@@ -68,6 +70,40 @@
         </div>
       </div>
     </div>
+  <el-dialog title="新增安排" :visible.sync="dialogFormVisible" width="600px">
+  <el-form :model="form">
+    <el-form-item label="会议室" :label-width="formLabelWidth">
+      <el-select v-model="form.roomId" placeholder="请选择会议室" style="width:400px">
+        <el-option label="一号会议室" value="1123"></el-option>
+        <el-option label="二号会议室" value="23234"></el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item label="会议时间" :label-width="formLabelWidth">
+        <el-date-picker
+          value-format="yyyy-MM-dd HH:mm:ss"
+          style="width:400px"
+          v-model="meetTime"
+          type="datetimerange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期">
+        </el-date-picker>
+    </el-form-item>
+    <el-form-item label="会议状态" :label-width="formLabelWidth">
+      <el-select v-model="form.status" placeholder="请选择活动区域" style="width:400px">
+        <el-option label="进行中" :value="0"></el-option>
+        <el-option label="已完成" :value="1"></el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item label="内容" :label-width="formLabelWidth">
+      <el-input v-model="form.content" style="width:400px"></el-input>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="dialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="submit">确 定</el-button>
+  </div>
+</el-dialog>
   </div>
 </template>
 
@@ -77,35 +113,48 @@ export default {
   data () {
     return {
       date: '',
-      chooseDate: '2021-01-14',
+      chooseDate: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
       config: {
         startTime: 6,
         endTime: 18
       },
+      formLabelWidth: '120px',
+      dialogFormVisible: false,
+      meetTime: [],
+      form: {
+        id: new Date().getTime(),
+        roomId: '',
+        content: '',
+        status: 0,
+        startTime: '',
+        endTime: ''
+      },
       roomList: [
         {
-          id: '1123',
-          name: '会议室1',
+          roomId: '1123',
+          name: '一号会议室',
           roomData: [
             {
+              roomId: '1123',
               id: '223865',
-              statusDesc: '进行中',
-              startTime: '2021-01-14 8:00:00',
-              endTime: '2021-01-14 10:00:00',
-              content: '消防演习'
+              status: 0,
+              startTime: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()} 8:10:00`,
+              endTime: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()} 10:00:00`,
+              content: '商量产品选型'
             }
           ]
         },
         {
-          id: '23234',
-          name: '会议室2',
+          roomId: '23234',
+          name: '二号会议室',
           roomData: [
             {
+              roomId: '23234',
               id: '879786',
-              statusDesc: '已完成',
-              startTime: '2021-01-14 14:00:00',
-              endTime: '2021-01-14 16:00:00',
-              content: '开会'
+              status: 1,
+              startTime: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()} 14:00:00`,
+              endTime: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()} 16:00:00`,
+              content: '方案修改计划'
             }
           ]
         }
@@ -123,9 +172,10 @@ export default {
         // return 0;
       } else {
         const time = (dTime - leftTime) / 1000// 秒数
-        const bai = time / ((this.config.endTime - this.config.startTime + 1) * 60 * 60) * 100 * 0.88 + 12
-        if (bai < 100) {
-          return bai
+        const leftPercent = time / ((this.config.endTime - this.config.startTime + 1) * 60 * 60) * 100 * 0.88 + 12
+        // eslint-disable-next-line no-debugger
+        if (leftPercent < 100) {
+          return leftPercent
         } else {
           return 100
         }
@@ -136,6 +186,28 @@ export default {
       const _left2 = this.getLeftTime(item.endTime)
       console.log(_left1, _left2)
       return _left2 - _left1
+    },
+    insert () {
+      this.meetTime = []
+      this.form = this.$options.data().form
+      this.dialogFormVisible = true
+    },
+    edit (item) {
+      this.dialogFormVisible = true
+      this.form = { ...item }
+      this.meetTime = [item.startTime, item.endTime]
+    },
+    submit () {
+      this.form.startTime = this.meetTime[0]
+      this.form.endTime = this.meetTime[1]
+      // 添加到roomList中
+      this.roomList.forEach(item => {
+        if (item.roomId === this.form.roomId) {
+          item.roomData.push(this.form)
+        }
+      })
+
+      this.dialogFormVisible = false
     }
   }
 }
@@ -144,6 +216,10 @@ export default {
 <style scoped >
 .Gantt {
   padding: 20px;
+  border-radius: 3px;
+  border: 1px solid red;
+  height:100%;
+  box-sizing: border-box;
 }
 .content {
   padding-top: 20px;

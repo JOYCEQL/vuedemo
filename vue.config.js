@@ -1,3 +1,10 @@
+/*
+ * @Author: yuguangzhou
+ * @Date: 2021-01-23 14:32:02
+ * @LastEditTime: 2021-07-08 21:48:54
+ * @LastEditors: yuguangzhou
+ * @Description:
+ */
 module.exports = {
 
   // 在exports中添加，这里很关键，不配置不行
@@ -6,6 +13,13 @@ module.exports = {
   chainWebpack (config) {
     // 在chainWebpack中添加下面的代码
     config.entry('main').add('babel-polyfill') // main是入口js文件
+  },
+  configureWebpack: {
+    externals: {
+      AMap: 'AMap',
+      AMapUI: 'AMapUI',
+      Loca: 'Loca'
+    }
   },
   devServer: {
     // 设置代理
